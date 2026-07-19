@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Like Challenge</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:tahoma;
+}
+
+body{
+background:#080808;
+color:white;
+}
+
+
+header{
+text-align:center;
+padding:35px;
+background:#111;
+}
+
+
+header h1{
+color:#00ffcc;
+font-size:40px;
+}
+
+
+.stats{
+width:90%;
+max-width:1000px;
+margin:30px auto;
+display:flex;
+gap:20px;
+}
+
+
+.box{
+flex:1;
+background:#151515;
+padding:25px;
+border-radius:20px;
+text-align:center;
+border:1px solid #333;
+}
+
+
+.number{
+font-size:45px;
+margin-top:15px;
+color:#00ffcc;
+}
+
+
+.money{
+color:#ffd700;
+}
+
+
+.videos{
+width:90%;
+max-width:1100px;
+margin:auto;
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+}
+
+
+.card{
+background:#151515;
+padding:20px;
+border-radius:20px;
+}
+
+
+.video{
+height:250px;
+background:#000;
+border-radius:15px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:60px;
+}
+
+
+.like-area{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-top:20px;
+}
+
+
+button{
+background:#ff0055;
+border:none;
+color:white;
+padding:12px 30px;
+border-radius:50px;
+cursor:pointer;
+font-size:17px;
+}
+
+
+button:disabled{
+background:#555;
+cursor:not-allowed;
+}
+
+
+@media(max-width:800px){
+
+.videos{
+grid-template-columns:1fr;
+}
+
+.stats{
+flex-direction:column;
+}
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+<h1>
+🔥 Like Challenge
+</h1>
+
+<p>
+با حمایت شما بودجه بیشتر می‌شود ❤️
+</p>
+
+</header>
+
+
+
+<div class="stats">
+
+
+<div class="box">
+
+<h2>
+❤️ مجموع لایک
+</h2>
+
+<div class="number" id="total">
+0
+</div>
+
+</div>
+
+
+
+<div class="box">
+
+<h2>
+💰 بودجه
+</h2>
+
+<div class="number money" id="money">
+0
+</div>
+
+تومان
+
+</div>
+
+
+</div>
+
+
+
+
+<div class="videos">
+
+
+
+<div class="card">
+
+<h2>🎬 ویدیو ۱</h2>
+
+<div class="video">
+▶️
+</div>
+
+
+<div class="like-area">
+
+❤️ <span id="like1">0</span>
+
+
+<button id="btn1">
+لایک
+</button>
+
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>🎬 ویدیو ۲</h2>
+
+<div class="video">
+▶️
+</div>
+
+
+<div class="like-area">
+
+❤️ <span id="like2">0</span>
+
+
+<button id="btn2">
+لایک
+</button>
+
+
+</div>
+
+</div>
+
+
+
+
+<div class="card">
+
+<h2>🎬 ویدیو ۳</h2>
+
+<div class="video">
+▶️
+</div>
+
+
+<div class="like-area">
+
+❤️ <span id="like3">0</span>
+
+
+<button id="btn3">
+لایک
+</button>
+
+
+</div>
+
+</div>
+
+
+
+</div><script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+getAuth,
+signInAnonymously
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+getDatabase,
+ref,
+onValue,
+update,
+set
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// تنظیمات Firebase
+
+const firebaseConfig = {
+
+apiKey: "AIzaSyCYP4c19HzUE8zFFFUaMLEMmtjXAMYam8k",
+
+authDomain: "like-challenge.firebaseapp.com",
+
+databaseURL: "https://like-challenge-default-rtdb.firebaseio.com/",
+
+projectId: "like-challenge",
+
+storageBucket: "like-challenge.firebasestorage.app",
+
+messagingSenderId: "338058516758",
+
+appId: "1:338058516758:web:db7d028d253b776411d837"
+
+};
+
+
+// اتصال Firebase
+
+const app = initializeApp(firebaseConfig);
+
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+signInAnonymously(auth)
+.then(() => {
+    console.log("ورود ناشناس موفق");
+})
+.catch((error) => {
+    console.log("خطا:", error);
+});
+
+
+// مقدار اولیه
+
+let data = {
+
+like1:0,
+like2:0,
+like3:0
+
+};
+
+
+
+// گرفتن اطلاعات از Firebase
+
+const likesRef = ref(db,"challenge");
+
+onValue(likesRef,(snapshot)=>{
+
+
+if(snapshot.exists()){
+
+data = snapshot.val();
+
+}else{
+
+
+update(likesRef,data);
+
+
+}
+
+
+
+document.getElementById("like1").innerHTML = data.like1;
+
+document.getElementById("like2").innerHTML = data.like2;
+
+document.getElementById("like3").innerHTML = data.like3;
+
+
+updateMoney();
+
+
+});
+
+
+
+
+// جلوگیری از لایک دوباره
+
+let voted = JSON.parse(localStorage.getItem("voted")) || {
+
+1:false,
+2:false,
+3:false
+
+};
+
+
+
+
+// فعال کردن دکمه‌ها
+
+for(let i=1;i<=3;i++){
+
+
+if(voted[i]){
+
+document.getElementById("btn"+i).disabled=true;
+
+document.getElementById("btn"+i).innerHTML="لایک شد ✅";
+
+}
+
+
+document
+.getElementById("btn"+i)
+.onclick=()=>like(i);
+
+
+}
+
+
+
+
+// تابع لایک
+
+function like(id){
+
+if(voted[id]) return;
+
+
+let key = "like" + id;
+
+
+// اضافه کردن یک لایک
+data[key]++;
+console.log("تابع لایک اجرا شد", data);
+
+// ذخیره در Firebase
+set(
+ref(db,"challenge"),
+data
+).then(function(){
+    console.log("Firebase OK");
+}).catch(function(error){
+    console.log("Firebase ERROR", error);
+});
+console.log("ارسال به فایربیس:", data);
+
+// تغییر فوری عدد روی صفحه
+document.getElementById("like"+id).innerHTML = data[key];
+
+
+// آپدیت مجموع لایک و مبلغ
+updateMoney();
+
+
+// ذخیره لایک کاربر
+voted[id] = true;
+
+
+localStorage.setItem(
+"voted",
+JSON.stringify(voted)
+);
+
+
+// قفل کردن دکمه
+document.getElementById("btn"+id).disabled = true;
+
+
+document.getElementById("btn"+id).innerHTML =
+"لایک شد ✅";
+
+
+}
+
+
+// محاسبه بودجه
+
+function updateMoney(){
+
+
+let total =
+
+data.like1 +
+data.like2 +
+data.like3;
+
+
+
+document.getElementById("total").innerHTML=total;
+
+
+
+let price = 2000;
+
+
+
+let money = total * price;
+
+
+
+document.getElementById("money").innerHTML=
+
+money.toLocaleString();
+
+
+
+}
+
+
+
+</script>
+
+
+</body>
+
+</html>
